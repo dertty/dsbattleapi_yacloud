@@ -213,6 +213,7 @@ def create_submit(
                     hid=hid, bid=bid, uid=uid,
                     public_score=public_score,
                     comment=comment, file_location=file_location, )
+                crud.create_submit(db=db, submit=submit)
                 return submit
                 return "Отправка решений для доступна с 00:00 1 ноября по 23:59 30 ноября по Московскому времени."
             else:
