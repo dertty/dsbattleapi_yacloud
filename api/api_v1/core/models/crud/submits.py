@@ -137,11 +137,13 @@ def get_leaderboard(
                     ) \
                     .all()
             return leaderboard
-        sort_rank = func.rank().over(partition_by=models.SubmitOld.uid, order_by=[models.SubmitOld.public_score.desc(), models.SubmitOld.submit_dt.asc()]).label('sort_rank')
+        sort_rank = func.rank().over(
+            partition_by=models.SubmitOld.uid,
+            order_by=[models.SubmitOld.public_score.desc(),
+                      models.SubmitOld.submit_dt.asc()]).label('sort_rank')
         pre_leaderboard = crud.get_submits(db=db, query=True) \
             .filter(models.SubmitOld.hid == hid) \
             .filter(models.SubmitOld.bid == bid) \
-            .filter(models.SubmitOld.submit_dt < '2021-12-01') \
             .with_entities(
                 models.SubmitOld.uid,
                 models.SubmitOld.public_score,
