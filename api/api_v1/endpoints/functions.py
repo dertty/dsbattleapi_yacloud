@@ -182,44 +182,21 @@ def create_submit(
     elif hid == 10: # crypto
         if bid == 0:
             utc = pytz.UTC
-            if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 5:
-                # try:
-                uploaded_file = pd.read_csv(StringIO(file.file.read().decode('utf8')), sep=',',)
-                if uploaded_file.shape[0] > 2:
-
-                    def get_revenue(df: pd.DataFrame, deals_column='pred', price_column='price',) -> float:
-                        '''
-                        1 - sell
-                        2 - buy
-                        Does trading always start with buying money?
-                        '''
-                        df = df[[deals_column, price_column]].reset_index(drop=True)[[deals_column, price_column]].copy()
-
-                        first_buy_index = df[df[deals_column] == 2].first_valid_index()
-                        df = df.iloc[first_buy_index:]
-                        df = df[df[deals_column] > 0]
-                        # first buy and first sell after buy
-                        # left only buy-sell pairs and ignore all transactions between them (if that transactions don't form a pair)
-                        df = df[df[deals_column] != df[deals_column].shift(1)]
-                        return (- df[price_column][::2] + df[price_column].shift(-1)[::2]).fillna(0).sum()
-
-                    public_score = get_revenue(uploaded_file)
-                else:
-                    return "Проверьте файл, неправильное количество наблюдений."
-                # except:
-                #     return "Проверьте файл, ошибка при чтении файла."
-
+            if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 12:
                 submit = schemas.SubmitCreate(
                     hid=hid, bid=bid, uid=uid,
-                    public_score=public_score,
+                    public_score=-1,
                     comment=comment, file_location=file_location, )
                 crud.create_submit(db=db, submit=submit)
+
+                def jobs_for_background():
+                    save_file_to_s3(file.file, file_location)
+                background_tasks.add_task(jobs_for_background)
                 return submit
-                return "Отправка решений для доступна с 00:00 1 ноября по 23:59 30 ноября по Московскому времени."
             else:
-                return "Превышено количество сабмитов. " + \
-                       "В день доступно 5 сабмитов. " + \
-                       "Количество сабмитов сбрасывается в 00:00 (Московское время)."
+                return "The number of submissions has been exceeded. " + \
+                       "12 submissions available per day. " + \
+                       "The number of submissions resets at 00:00 (UTC+0)."
     else:
         return "Приём решений закрыт."
     return submit
