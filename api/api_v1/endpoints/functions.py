@@ -22,6 +22,8 @@ from api.api_v1.core.models.crud import crud, submits, users, teams
 from api_versioning import versioned_api_route
 
 import pandas as pd
+import zipfile
+import io
 
 router = APIRouter(route_class=versioned_api_route(1, 0))
 
@@ -187,10 +189,20 @@ def create_submit(
                     hid=hid, bid=bid, uid=uid,
                     public_score=-1,
                     comment=comment, file_location=file_location, )
-                crud.create_submit(db=db, submit=submit)
 
                 def jobs_for_background():
-                    save_file_to_s3(file.file, file_location)
+                    try:
+                        if zipfile.is_zipfile(io.BytesIO(file)):
+                            the_zip_file = zipfile.ZipFile(io.BytesIO(file))
+                            ret = the_zip_file.testzip()
+                            if ret is not None:
+                                submit.comment = f'{ret}_{comment}'
+                            save_file_to_s3(file.file, file_location)
+                        else:
+                            submit.comment = f'BadZipFile error_{comment}'
+                    except:
+                        submit.comment = f'BadZipFile error_{comment}'
+                    crud.create_submit(db=db, submit=submit)
                 background_tasks.add_task(jobs_for_background)
                 return submit
             else:
@@ -267,6 +279,26 @@ def get_submit_file(
         return StreamingResponse(file_like, media_type="text/plain")
     else:
         raise HTTPException(status_code=400, detail="Not allowed, wrong file.")
+
+
+@router.get(
+    "/get_logs_file",
+    summary="Получение логов, отправленных участниками",
+    tags=["submits"], )
+def get_submit_file(
+        sid: int,
+        uid: int,
+        db: Session = Depends(get_db),
+        access_token: Optional[str] = ''
+):
+    check_access_token(access_token)
+    sid = crud.get_submits(db, query=True).filter(models.SubmitOld.id == sid).first()
+    if sid.uid == uid:
+        file_like = get_file_from_s3_bytes(sid.file_location + '_logs.txt')
+        return StreamingResponse(file_like, media_type="text/plain")
+    else:
+        raise HTTPException(status_code=400, detail="Not allowed, wrong file.")
+
 
 
 @router.put(
