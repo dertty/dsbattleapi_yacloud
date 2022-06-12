@@ -191,17 +191,7 @@ def create_submit(
                     comment=comment, file_location=file_location, )
 
                 def jobs_for_background():
-                    try:
-                        if zipfile.is_zipfile(io.BytesIO(file)):
-                            the_zip_file = zipfile.ZipFile(io.BytesIO(file))
-                            ret = the_zip_file.testzip()
-                            if ret is not None:
-                                submit.comment = f'{ret}_{comment}'
-                            save_file_to_s3(file.file, file_location)
-                        else:
-                            submit.comment = f'BadZipFile error_{comment}'
-                    except:
-                        submit.comment = f'BadZipFile error_{comment}'
+                    save_file_to_s3(file.file, file_location)
                     crud.create_submit(db=db, submit=submit)
                 background_tasks.add_task(jobs_for_background)
                 return submit
