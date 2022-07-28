@@ -319,7 +319,7 @@ def change_username(user_details: schemas.UserInfo, db: Session = Depends(get_db
 def star_submit(sid: int, uid: int, action: int, hid: int, db: Session = Depends(get_db), access_token: Optional[str] = ''):
     check_access_token(access_token)
     utc = pytz.UTC
-    if utc.localize(datetime.datetime(2021, 11, 1, 0, 0, 0)) <= datetime.datetime.now(pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2021, 11, 30, 23, 59, 0)):
+    if hid == 10:
         if action == 0:
             flags_num = submits.count_submit_star_flags(db=db, uid=uid, hid=hid)
             if flags_num is not None:
@@ -332,7 +332,20 @@ def star_submit(sid: int, uid: int, action: int, hid: int, db: Session = Depends
         else:
             return submits.unstar_submit_star_flag(db=db, sid=sid)
     else:
-        raise HTTPException(status_code=400, detail="Хакатон завершился")
+        if utc.localize(datetime.datetime(2021, 11, 1, 0, 0, 0)) <= datetime.datetime.now(pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2021, 11, 30, 23, 59, 0)):
+            if action == 0:
+                flags_num = submits.count_submit_star_flags(db=db, uid=uid, hid=hid)
+                if flags_num is not None:
+                    if flags_num < 2:
+                        return submits.star_submit_star_flag(db=db, sid=sid)
+                    else:
+                        raise HTTPException(status_code=400, detail="Allowed only two stared submits")
+                else:
+                    raise HTTPException(status_code=400, detail="Invalid values")
+            else:
+                return submits.unstar_submit_star_flag(db=db, sid=sid)
+        else:
+            raise HTTPException(status_code=400, detail="Хакатон завершился")
 
 
 @router.put(
