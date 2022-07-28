@@ -326,7 +326,8 @@ def star_submit(sid: int, uid: int, action: int, hid: int, db: Session = Depends
                 if flags_num < 2:
                     return submits.star_submit_star_flag(db=db, sid=sid)
                 else:
-                    raise HTTPException(status_code=400, detail="Allowed only two stared submits")
+                    return {'success': 'Allowed only two stared submits'}
+                    # raise HTTPException(status_code=400, detail="Allowed only two stared submits")
             else:
                 raise HTTPException(status_code=400, detail="Invalid values")
         else:
