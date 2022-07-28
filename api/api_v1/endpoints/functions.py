@@ -319,7 +319,7 @@ def change_username(user_details: schemas.UserInfo, db: Session = Depends(get_db
 def star_submit(sid: int, uid: int, action: int, hid: int, db: Session = Depends(get_db), access_token: Optional[str] = ''):
     check_access_token(access_token)
     utc = pytz.UTC
-    if hid == 10 or hid== 8:
+    if hid == 10 or hid == 5:
         if action == 0:
             flags_num = submits.count_submit_star_flags(db=db, uid=uid, hid=hid)
             if flags_num is not None:
