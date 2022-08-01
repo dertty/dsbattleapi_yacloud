@@ -185,7 +185,7 @@ def create_submit(
         if bid == 0:
             utc = pytz.UTC
             if utc.localize(datetime.datetime(2021, 11, 1, 0, 0, 0)) <= datetime.datetime.now(
-                    pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2022, 8, 1, 9, 15, 0)):
+                    pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2022, 8, 1, 9, 30, 0)):
                 if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 12:
                     submit = schemas.SubmitCreate(
                         hid=hid, bid=bid, uid=uid,
@@ -324,7 +324,7 @@ def star_submit(sid: int, uid: int, action: int, hid: int, db: Session = Depends
     utc = pytz.UTC
     if hid == 10 or hid == 5:
         if utc.localize(datetime.datetime(2021, 11, 1, 0, 0, 0)) <= datetime.datetime.now(
-                pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2022, 8, 1, 9, 15, 0)):
+                pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2022, 8, 1, 9, 30, 0)):
             if action == 0:
                 flags_num = submits.count_submit_star_flags(db=db, uid=uid, hid=hid)
                 if flags_num is not None:
