@@ -182,7 +182,7 @@ def create_submit(
                            "В день доступно 5 сабмитов. " +\
                            "Количество сабмитов сбрасывается в 00:00 (Московское время)."
     elif hid == 10: # crypto
-        if bid == 0:x
+        if bid == 0:
             utc = pytz.UTC
             # return "Приём решений закрыт."
             if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 12:
