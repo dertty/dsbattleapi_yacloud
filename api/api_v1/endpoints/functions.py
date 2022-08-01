@@ -184,22 +184,24 @@ def create_submit(
     elif hid == 10: # crypto
         if bid == 0:
             utc = pytz.UTC
-            # return "Приём решений закрыт."
-            if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 12:
-                submit = schemas.SubmitCreate(
-                    hid=hid, bid=bid, uid=uid,
-                    public_score=-1,
-                    comment=comment, file_location=file_location, )
+            if utc.localize(datetime.datetime(2021, 11, 1, 0, 0, 0)) <= datetime.datetime.now(
+                    pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2022, 8, 1, 9, 15, 0)):
+                if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 12:
+                    submit = schemas.SubmitCreate(
+                        hid=hid, bid=bid, uid=uid,
+                        public_score=-1,
+                        comment=comment, file_location=file_location, )
 
-                def jobs_for_background():
-                    save_file_to_s3(file.file, file_location)
-                    crud.create_submit(db=db, submit=submit)
-                background_tasks.add_task(jobs_for_background)
-                return submit
-            else:
-                return "The number of submissions has been exceeded. " + \
-                       "12 submissions available per day. " + \
-                       "The number of submissions resets at 00:00 (UTC+0)."
+                    def jobs_for_background():
+                        save_file_to_s3(file.file, file_location)
+                        crud.create_submit(db=db, submit=submit)
+                    background_tasks.add_task(jobs_for_background)
+                    return submit
+                else:
+                    return "The number of submissions has been exceeded. " + \
+                           "12 submissions available per day. " + \
+                           "The number of submissions resets at 00:00 (UTC+0)."
+            return "Приём решений закрыт."
     else:
         return "Приём решений закрыт."
     return submit
@@ -321,19 +323,21 @@ def star_submit(sid: int, uid: int, action: int, hid: int, db: Session = Depends
     check_access_token(access_token)
     utc = pytz.UTC
     if hid == 10 or hid == 5:
+        if utc.localize(datetime.datetime(2021, 11, 1, 0, 0, 0)) <= datetime.datetime.now(
+                pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2022, 8, 1, 9, 15, 0)):
+            if action == 0:
+                flags_num = submits.count_submit_star_flags(db=db, uid=uid, hid=hid)
+                if flags_num is not None:
+                    if flags_num < 2:
+                        return submits.star_submit_star_flag(db=db, sid=sid)
+                    else:
+                        return {'success': 'Allowed only two stared submits'}
+                        # raise HTTPException(status_code=400, detail="Allowed only two stared submits")
+                else:
+                    raise HTTPException(status_code=400, detail="Invalid values")
+            else:
+                return submits.unstar_submit_star_flag(db=db, sid=sid)
         return {'success': 'The hackathon ended!'}
-        # if action == 0:
-        #     flags_num = submits.count_submit_star_flags(db=db, uid=uid, hid=hid)
-        #     if flags_num is not None:
-        #         if flags_num < 2:
-        #             return submits.star_submit_star_flag(db=db, sid=sid)
-        #         else:
-        #             return {'success': 'Allowed only two stared submits'}
-        #             # raise HTTPException(status_code=400, detail="Allowed only two stared submits")
-        #     else:
-        #         raise HTTPException(status_code=400, detail="Invalid values")
-        # else:
-        #     return submits.unstar_submit_star_flag(db=db, sid=sid)
     else:
         if utc.localize(datetime.datetime(2021, 11, 1, 0, 0, 0)) <= datetime.datetime.now(pytz.timezone('Europe/Moscow')) < utc.localize(datetime.datetime(2021, 11, 30, 23, 59, 0)):
             if action == 0:
