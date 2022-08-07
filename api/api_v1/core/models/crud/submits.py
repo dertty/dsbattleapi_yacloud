@@ -618,7 +618,7 @@ def get_final_leaderboard_mkb(
     pre_leaderboard = crud.get_submits(db=db, query=True) \
         .filter(models.SubmitOld.hid == hid) \
         .filter(models.SubmitOld.bid == bid) \
-        .filter(models.SubmitOld.submit_dt < '2022-08-01') \
+        .filter(models.SubmitOld.submit_dt < '2022-08-08') \
         .with_entities(
             models.SubmitOld.uid,
             models.SubmitOld.public_score,
