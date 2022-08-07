@@ -634,32 +634,33 @@ def get_final_leaderboard_mkb(
         .label('sort_rank2')
     top2_submits = db.query(pre_leaderboard) \
         .filter(pre_leaderboard.c.sort_rank1 < 3) \
+        .filter(pre_leaderboard.c.private_score != 0) \
         .with_entities(
             pre_leaderboard.c.uid,
             pre_leaderboard.c.public_score,
             pre_leaderboard.c.private_score,
             pre_leaderboard.c.submit_dt,
             sort_rank2,
-        ).subquery('t2')
+        ).all()#.subquery('t2')
 
-    leaderboard = crud.get_users(db=db, query=True) \
-        .filter(top2_submits.c.sort_rank2 == 1) \
-        .join(top2_submits, models.UserOld.id == top2_submits.c.uid) \
-        .order_by(top2_submits.c.private_score.desc()) \
-        .with_entities(
-            func.row_number().over().label('rank'),
-            models.UserOld.name,
-            models.UserOld.email,
-            models.UserOld.firstname,
-            models.UserOld.lastname,
-            models.UserOld.city,
-            func.concat(func.round(top2_submits.c.public_score, 4)).label('public_score'),
-            func.concat(func.round(top2_submits.c.private_score, 4)).label('private_score'),
-            top2_submits.c.submit_dt,
-        ) \
-        .all()
+    # leaderboard = crud.get_users(db=db, query=True) \
+    #     .filter(top2_submits.c.sort_rank2 == 1) \
+    #     .join(top2_submits, models.UserOld.id == top2_submits.c.uid) \
+    #     .order_by(top2_submits.c.private_score.desc()) \
+    #     .with_entities(
+    #         func.row_number().over().label('rank'),
+    #         models.UserOld.name,
+    #         models.UserOld.email,
+    #         models.UserOld.firstname,
+    #         models.UserOld.lastname,
+    #         models.UserOld.city,
+    #         func.concat(func.round(top2_submits.c.public_score, 4)).label('public_score'),
+    #         func.concat(func.round(top2_submits.c.private_score, 4)).label('private_score'),
+    #         top2_submits.c.submit_dt,
+    #     ) \
+    #     .all()
 
-    return leaderboard
+    return top2_submits
 
 
 def get_submits_num(
