@@ -633,7 +633,7 @@ def get_final_leaderboard_mkb(
             pre_leaderboard.c.submit_dt.asc()]) \
         .label('sort_rank2')
     top2_submits = db.query(pre_leaderboard) \
-        .filter(pre_leaderboard.c.sort_rank1 < 2) \
+        .filter(pre_leaderboard.c.sort_rank1 < 3) \
         .with_entities(
             pre_leaderboard.c.uid,
             pre_leaderboard.c.public_score,
