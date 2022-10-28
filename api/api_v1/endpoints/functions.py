@@ -61,7 +61,7 @@ def create_submit(
     file_location = f'hackathons_submits/hid{hid}/uid{uid}/bid{bid}/{new_file_name}'
 
     if hid == 5: # junior ds
-        if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 3:
+        if submits.get_day_submits_num(db=db, hid=hid, bid=bid, uid=uid) < 10:
             try:
                 uploaded_file = np.genfromtxt(StringIO(file.file.read().decode('utf8')), delimiter=';', skip_header=True)
                 file_for_public_score = f'hackathons_resources/hid{hid}/public_dataset.csv'
@@ -716,7 +716,7 @@ def get_team(hid: int, bid: int, db: Session = Depends(get_db), access_token: Op
 
 @router.get(
     "/final_leaderboard",
-    response_model=List[schemas.FinalLeaderBoard],
+    # response_model=List[schemas.FinalLeaderBoard],
     summary="Получение лидерборда",
     tags=["submits"], )
 def get_final_leaderboard(hid: int, bid: int, db: Session = Depends(get_db), access_token: Optional[str] = '', org: Optional[str] = ''):

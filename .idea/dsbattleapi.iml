@@ -5,4 +5,7 @@
     <orderEntry type="jdk" jdkName="Pipenv (dsbattleapi_yacloud)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PyDocumentationSettings">
+    <option name="renderExternalDocumentation" value="true" />
+  </component>
 </module>
